@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, HttpException, HttpStatus, Get } from '@nestjs/common';
 import { AddressService } from './address.service';
 import { Body, Post, Request, UseGuards } from '@nestjs/common';
 import { CreateAddressDto } from './dto/create.address.dto';
@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 @Controller('address')
 export class AddressController {
   constructor(private addressService: AddressService) {}
+
   @UseGuards(JwtAuthGuard)
   @Post('')
   async generateNewAddress(
@@ -19,9 +20,23 @@ export class AddressController {
       req.user.id,
       createAddressDto,
     );
+    if (address) {
+      return {
+        address: address.address,
+      };
+    }
+    throw new HttpException(
+      {
+        status: HttpStatus.BAD_REQUEST,
+        error: 'Ops, an error occurred, please try again later',
+      },
+      HttpStatus.BAD_REQUEST,
+    );
+  }
 
-    return {
-      address: address.address,
-    };
+  @UseGuards(JwtAuthGuard)
+  @Get('')
+  async getAddresses() {
+    return [];
   }
 }
