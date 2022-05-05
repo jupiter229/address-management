@@ -26,6 +26,7 @@ export class AddressService {
     createAddressDto: CreateAddressDto,
   ): Promise<AddressDocument> {
     const assetData = cryptoassets[createAddressDto.code];
+
     if (assetData) {
       const user = await this.authDocumentModel.findById(userId);
       const existingAddress = await this.addressDocumentModel
