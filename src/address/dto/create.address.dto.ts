@@ -10,4 +10,6 @@ export class CreateAddressDto {
   @IsNotEmpty()
   @IsString()
   chain: string;
+
+  derivationIndex: number;
 }
