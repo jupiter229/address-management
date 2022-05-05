@@ -1,6 +1,6 @@
 import { Controller, HttpException, HttpStatus, Get } from '@nestjs/common';
 import { AddressService } from './address.service';
-import { Body, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Post, Request, UseGuards, Query } from '@nestjs/common';
 import { CreateAddressDto } from './dto/create.address.dto';
 import { JwtAuthGuard } from '../authentication/jwt-auth.guard';
 
@@ -36,7 +36,8 @@ export class AddressController {
 
   @UseGuards(JwtAuthGuard)
   @Get('')
-  async getAddresses() {
-    return [];
+  getAddresses(@Request() req, @Query() query) {
+    const { page = 1 } = query;
+    return this.addressService.getAddresses(req.user.id, { page });
   }
 }

@@ -118,29 +118,19 @@ export class AddressService {
       );
     }
   }
-  validateNewAddressType(type: string) {
-    const validAssetTypes = ['native', 'erc20', 'bep20'];
 
-    if (validAssetTypes.indexOf(type.toLowerCase()) === -1) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: 'Unsupported asset type',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-  validateAddressNewAddress(chain: string, address: string) {
-    const isAddressValid = chains[chain].isValidAddress(address);
-    if (!isAddressValid) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: 'InvalidAddress',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+  async getAddresses(userId: string, queryOptions) {
+    const user = await this.authDocumentModel.findById(userId);
+    const options = {
+      ...queryOptions,
+      select: 'address asset',
+      limit: parseInt(process.env.PAGINATION_LIMIT),
+      //sort: { date: -1 },
+      collation: {
+        locale: 'en',
+      },
+    };
+    // @ts-ignore
+    return this.addressDocumentModel.paginate({ user }, options);
   }
 }
