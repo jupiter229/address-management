@@ -6,13 +6,10 @@ export type AddressDocument = Address & mongoose.Document;
 
 @Schema()
 export class Address {
-  @Prop({ required: true, lowercase: true })
+  @Prop({ required: true, lowercase: true, unique: true })
   address: string;
 
-  @Prop({})
-  seedPhrase: string;
-
-  @Prop({ type: Number, default: -1 })
+  @Prop({ type: Number, default: -1, unique: true, required: true })
   derivationIndex: number;
 
   @Prop({ required: true })
