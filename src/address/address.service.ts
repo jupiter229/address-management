@@ -4,12 +4,17 @@ import { Address, AddressDocument } from './schema/address.schema';
 import { Model } from 'mongoose';
 import { CreateAddressDto } from './dto/create.address.dto';
 import { AuthDocument, Auth } from '../authentication/schemas/auth.schema';
-import { assets as cryptoassets, chains } from '@liquality/cryptoassets';
+import {
+  assets as cryptoassets,
+  chains,
+  currencyToUnit,
+} from '@liquality/cryptoassets';
 import { isEthereumChain } from '../network-client/utils/asset';
 import { ConfigService } from '@nestjs/config';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { NetworkClientService } from '../network-client/network-client.service';
-
+import { TransferAssetsDto } from './dto/transfer.assets.dto';
+import BN from 'bignumber.js';
 @Injectable()
 export class AddressService {
   constructor(
@@ -132,5 +137,105 @@ export class AddressService {
     };
     // @ts-ignore
     return this.addressDocumentModel.paginate({ user }, options);
+  }
+  async transferAsset(
+    userId: string,
+    addressId: string,
+    transferAssetsDto: TransferAssetsDto,
+  ) {
+    const existingAddress = await this.getExistingAddress(addressId);
+    const seedPhrase = this.configService.get('MNEMONIC');
+    const client = this.networkClientService.createClient(
+      transferAssetsDto.code,
+      seedPhrase,
+      existingAddress.derivationIndex,
+    );
+    // @ts-ignore
+    const originalEstimateGas = client._providers[0].estimateGas;
+
+    // if (gas) {
+    //   client._providers[0].estimateGas = async () => {
+    //     return gas;
+    //   };
+    // }
+
+    const amount = currencyToUnit(
+      cryptoassets[transferAssetsDto.code],
+      transferAssetsDto.amount,
+    ).toNumber();
+
+    const fees = await client.chain.getFees();
+    const selectedSpeed = 'fast';
+
+    let tx;
+    try {
+      tx = await client.chain.sendTransaction({
+        to: transferAssetsDto.to,
+        value: new BN(amount),
+        data: undefined,
+        fee: fees[selectedSpeed].fee,
+      });
+    } catch (e) {
+      console.log(e);
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: e.message,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    } finally {
+      // @ts-ignore
+      client._providers[0].estimateGas = originalEstimateGas;
+    }
+
+    return {
+      hash: tx,
+      message: 'Transaction has been initiated',
+    };
+  }
+  private async getExistingAddress(addressId: string) {
+    const existingAddress = await this.addressDocumentModel.findById(addressId);
+    if (existingAddress) {
+      return existingAddress;
+    }
+    throw new HttpException(
+      {
+        status: HttpStatus.BAD_REQUEST,
+        error: 'Wallet address does not exist',
+      },
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+  async getAssets(userId: string, addressId: string) {
+    return [
+      { asset: 'ETH', amount: 1.2 },
+      { asset: 'BTC', amount: 0.2 },
+      { asset: 'BNB', amount: 0.3 },
+    ];
+    // const assets = ['BBTC', 'BETH'];
+    const existingAddress = await this.getExistingAddress(addressId);
+    const seedPhrase = this.configService.get('MNEMONIC');
+    const networkClient = this.networkClientService.createClient(
+      existingAddress.asset,
+      seedPhrase,
+      existingAddress.derivationIndex,
+    );
+    const addresses = await networkClient.wallet.getUsedAddresses();
+    const balance =
+      addresses.length === 0
+        ? 0
+        : (
+            await networkClient.chain.getBalance([
+              {
+                address: '0xA75EDE99F376Dd47f3993Bc77037F61b5737C6EA',
+              },
+            ])
+          ).toNumber();
+
+    return {
+      asset: existingAddress.asset,
+      balance,
+    };
   }
 }

@@ -213,7 +213,7 @@ export class NetworkClientService {
       : 'https://liquality.io/eth-mainnet-api';
     const feeProvider = isTestnet
       ? new EthereumRpcFeeProvider()
-      : new EthereumGasNowFeeProvider();
+      : new EthereumGasNowFeeProvider('https://gasoracle.liquality.io');
 
     return this.createEthereumClient(
       asset,
@@ -296,7 +296,6 @@ export class NetworkClientService {
         ethClient.addProvider(new EthereumScraperSwapFindProvider(scraperApi));
     }
     ethClient.addProvider(feeProvider);
-
     return ethClient;
   }
   private createBtcClient(

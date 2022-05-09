@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { ConfigModule } from '@nestjs/config';
 import { NetworkClientModule } from './network-client/network-client.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -15,6 +16,10 @@ import { NetworkClientModule } from './network-client/network-client.module';
     AddressModule,
     AuthenticationModule,
     NetworkClientModule,
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 10,
+    }),
     MongooseModule.forRoot(process.env.MONGO_DB_URL, {
       connectionFactory: (connection) => {
         connection.plugin(require('mongoose-paginate-v2'));
