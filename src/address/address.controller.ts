@@ -21,8 +21,6 @@ export class AddressController {
     @Body() createAddressDto: CreateAddressDto,
     @Request() req,
   ) {
-    this.addressService.validateNewAddressChain(createAddressDto.chain);
-
     const address = await this.addressService.generateAddress(
       req.user.id,
       createAddressDto,
@@ -30,6 +28,7 @@ export class AddressController {
     if (address) {
       return {
         address: address.address,
+        code: createAddressDto.code,
       };
     }
     throw new HttpException(

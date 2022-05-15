@@ -7,9 +7,5 @@ export class CreateAddressDto {
   @IsString()
   code: string;
 
-  @IsNotEmpty()
-  @IsString()
-  chain: string;
-
   derivationIndex: number;
 }

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { assets as cryptoassets } from '@liquality/cryptoassets';
 import { ChainNetworks } from './utils/networks';
 import { EthereumRpcFeeProvider } from '@liquality/ethereum-rpc-fee-provider';
 import { Client } from '@liquality/client';
@@ -15,7 +14,7 @@ import buildConfig from './build.config';
 import { EthereumGasNowFeeProvider } from '@liquality/ethereum-gas-now-fee-provider';
 import { EthereumRpcProvider } from '@liquality/ethereum-rpc-provider';
 import { EthereumJsWalletProvider } from '@liquality/ethereum-js-wallet-provider';
-import { isERC20 } from './utils/asset';
+import { getCryptoAssets, isERC20 } from './utils/asset';
 import { EthereumErc20Provider } from '@liquality/ethereum-erc20-provider';
 import { EthereumErc20SwapProvider } from '@liquality/ethereum-erc20-swap-provider';
 import { EthereumErc20ScraperSwapFindProvider } from '@liquality/ethereum-erc20-scraper-swap-find-provider';
@@ -35,6 +34,7 @@ export class NetworkClientService {
   constructor(private readonly configService: ConfigService) {}
   public createClient(asset: string, mnemonic?, index = 0) {
     const network = this.configService.get('APP_NETWORK');
+    const cryptoassets = getCryptoAssets();
     const { chain } = cryptoassets[asset];
 
     const derivationPath = getDerivationPath(chain, network, index, 'default');
@@ -283,6 +283,7 @@ export class NetworkClientService {
     );
 
     if (isERC20(asset)) {
+      const cryptoassets = getCryptoAssets();
       const contractAddress = cryptoassets[asset].contractAddress;
       ethClient.addProvider(new EthereumErc20Provider(contractAddress));
       ethClient.addProvider(new EthereumErc20SwapProvider());
