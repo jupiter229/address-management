@@ -1082,10 +1082,9 @@
     bs58 "^4.0.1"
     crypto-hashing "^1.0.0"
 
-"@liquality/cryptoassets@^1.11.0":
-  version "1.11.0"
-  resolved "https://registry.yarnpkg.com/@liquality/cryptoassets/-/cryptoassets-1.11.0.tgz#1242f7a42785bc13f3867f90921ea18e5584bf59"
-  integrity sha512-vHz8vs+xMz1nQ+gG3/uC6wIGE9dMbK1lFWgX1GgC2UByT+zkJtMlF4yoq/vlk4zm9scopjYOakPEKEp8bH1Kqw==
+"@liquality/cryptoassets@file:../custom_cryptoassets/liquality-cryptoassets-1.7.5.tgz":
+  version "1.7.5"
+  resolved "file:../custom_cryptoassets/liquality-cryptoassets-1.7.5.tgz#2cf8cbb01a7d310b7d54cd822767cb89a6b61212"
   dependencies:
     bignumber.js "^9.0.2"
     bitcoin-address-validation "^2.2.1"

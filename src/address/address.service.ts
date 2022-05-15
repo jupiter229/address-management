@@ -5,9 +5,9 @@ import { Model } from 'mongoose';
 import { CreateAddressDto } from './dto/create.address.dto';
 import { AuthDocument, Auth } from '../authentication/schemas/auth.schema';
 import {
-  assets as cryptoassets,
   chains,
   currencyToUnit,
+  unitToCurrency,
 } from '@liquality/cryptoassets';
 import { isEthereumChain } from '../network-client/utils/asset';
 import { ConfigService } from '@nestjs/config';
@@ -15,6 +15,8 @@ import { AuthenticationService } from '../authentication/authentication.service'
 import { NetworkClientService } from '../network-client/network-client.service';
 import { TransferAssetsDto } from './dto/transfer.assets.dto';
 import BN from 'bignumber.js';
+import { CryptoAssetService } from '../network-client/crypto.asset.service';
+
 @Injectable()
 export class AddressService {
   constructor(
@@ -23,14 +25,17 @@ export class AddressService {
     @InjectModel(Auth.name) private authDocumentModel: Model<AuthDocument>,
     private readonly authenticationService: AuthenticationService,
     private readonly networkClientService: NetworkClientService,
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
+    private readonly cryptoAssetService: CryptoAssetService,
   ) {}
 
   async generateAddress(
     userId: string,
     createAddressDto: CreateAddressDto,
   ): Promise<AddressDocument> {
-    const assetData = cryptoassets[createAddressDto.code];
+    const assetData = this.cryptoAssetService.getSingleCryptoAssetData(
+      createAddressDto.code,
+    );
 
     if (assetData) {
       const user = await this.authDocumentModel.findById(userId);
@@ -40,6 +45,7 @@ export class AddressService {
           user,
         })
         .sort({ derivationIndex: -1 });
+
       const derivationIndex = existingAddress
         ? existingAddress.derivationIndex + 1
         : 0;
@@ -57,10 +63,11 @@ export class AddressService {
         ? result.address.replace('0x', '')
         : result.address;
 
-      const formattedAddress =
-        chains[cryptoassets[createAddressDto.code]?.chain]?.formatAddress(
-          rawAddress,
-        );
+      const asset = this.cryptoAssetService.getSingleCryptoAssetData(
+        createAddressDto.code,
+      );
+
+      const formattedAddress = chains[asset?.chain]?.formatAddress(rawAddress);
 
       const address = await this.saveNewAddress(userId, {
         ...createAddressDto,
@@ -159,10 +166,11 @@ export class AddressService {
     //   };
     // }
 
-    const amount = currencyToUnit(
-      cryptoassets[transferAssetsDto.code],
-      transferAssetsDto.amount,
-    ).toNumber();
+    const asset = this.cryptoAssetService.getSingleCryptoAssetData(
+      transferAssetsDto.code,
+    );
+
+    const amount = currencyToUnit(asset, transferAssetsDto.amount).toNumber();
 
     const fees = await client.chain.getFees();
     const selectedSpeed = 'fast';
@@ -208,12 +216,6 @@ export class AddressService {
     );
   }
   async getAssets(userId: string, addressId: string) {
-    return [
-      { asset: 'ETH', amount: 1.2 },
-      { asset: 'BTC', amount: 0.2 },
-      { asset: 'BNB', amount: 0.3 },
-    ];
-    // const assets = ['BBTC', 'BETH'];
     const existingAddress = await this.getExistingAddress(addressId);
     const seedPhrase = this.configService.get('MNEMONIC');
     const networkClient = this.networkClientService.createClient(
@@ -222,20 +224,19 @@ export class AddressService {
       existingAddress.derivationIndex,
     );
     const addresses = await networkClient.wallet.getUsedAddresses();
+
+    const asset = this.cryptoAssetService.getSingleCryptoAssetData(
+      existingAddress.asset,
+    );
     const balance =
       addresses.length === 0
         ? 0
-        : (
-            await networkClient.chain.getBalance([
-              {
-                address: '0xA75EDE99F376Dd47f3993Bc77037F61b5737C6EA',
-              },
-            ])
-          ).toNumber();
+        : (await networkClient.chain.getBalance(addresses)).toNumber();
 
     return {
       asset: existingAddress.asset,
-      balance,
+      balance: unitToCurrency(asset, balance),
+      address: existingAddress.address,
     };
   }
 }
