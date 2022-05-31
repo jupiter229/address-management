@@ -49,11 +49,9 @@ export class AddressService {
       const derivationIndex = existingAddress
         ? existingAddress.derivationIndex + 1
         : 0;
-      const seedPhrase = this.configService.get('MNEMONIC');
 
-      const networkClient = this.networkClientService.createClient(
+      const networkClient = await this.networkClientService.createClient(
         createAddressDto.code,
-        seedPhrase,
         derivationIndex,
       );
       const rawAddresses = await networkClient.wallet.getAddresses();
@@ -151,10 +149,8 @@ export class AddressService {
     transferAssetsDto: TransferAssetsDto,
   ) {
     const existingAddress = await this.getExistingAddress(addressId);
-    const seedPhrase = this.configService.get('MNEMONIC');
-    const client = this.networkClientService.createClient(
+    const client = await this.networkClientService.createClient(
       transferAssetsDto.code,
-      seedPhrase,
       existingAddress.derivationIndex,
     );
     // @ts-ignore
@@ -217,10 +213,8 @@ export class AddressService {
   }
   async getAssets(userId: string, addressId: string) {
     const existingAddress = await this.getExistingAddress(addressId);
-    const seedPhrase = this.configService.get('MNEMONIC');
-    const networkClient = this.networkClientService.createClient(
+    const networkClient = await this.networkClientService.createClient(
       existingAddress.asset,
-      seedPhrase,
       existingAddress.derivationIndex,
     );
     const addresses = await networkClient.wallet.getUsedAddresses();

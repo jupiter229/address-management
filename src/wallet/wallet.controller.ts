@@ -23,7 +23,23 @@ export class WalletController {
   @Get('/:walletId/assets')
   async getAssets(@Request() req, @Param() params) {
     const { walletId } = params;
-    return this.walletService.getAssets(walletId);
+    const assets = ['BTC', 'ETH'];
+    const result = [];
+
+    const rawResult = await this.walletService.getAssets(walletId);
+    for (const code of assets) {
+      const singleRes = {
+        code,
+        chains: [],
+      };
+      for (const singleRawResult of rawResult) {
+        if (singleRawResult.code.indexOf(code) > -1) {
+          singleRes.chains.push(singleRawResult);
+        }
+      }
+      result.push(singleRes);
+    }
+    return result;
   }
 
   @Get('/supported-assets')
