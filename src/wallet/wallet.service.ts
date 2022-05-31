@@ -3,10 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Wallet, WalletDocument } from './schema/wallet.schema';
 import { Model } from 'mongoose';
 import { Auth, AuthDocument } from '../authentication/schemas/auth.schema';
-import { CreateAddressDto } from '../address/dto/create.address.dto';
-import { AddressDocument } from '../address/schema/address.schema';
-import { isEthereumChain } from '../network-client/utils/asset';
 import { chains } from '@liquality/cryptoassets';
+import cryptoassets from '@liquality/wallet-core/dist/utils/cryptoassets';
 import { CryptoAssetService } from '../network-client/crypto.asset.service';
 import { ConfigService } from '@nestjs/config';
 import { NetworkClientService } from '../network-client/network-client.service';
@@ -57,30 +55,43 @@ export class WalletService {
   }
 
   async generateAddress(code: string, derivationIndex: number): Promise<any> {
-    const assetData = this.cryptoAssetService.getSingleCryptoAssetData(code);
+    const assetData = this.cryptoAssetService.getSingleCryptoAssetData(code)
+      ? this.cryptoAssetService.getSingleCryptoAssetData(code)
+      : this.getCustomAsset(code);
 
     if (assetData) {
-      const seedPhrase = this.configService.get('MNEMONIC');
-
-      const networkClient = this.networkClientService.createClient(
+      const networkClient = await this.networkClientService.createClient(
         code,
-        seedPhrase,
         derivationIndex,
       );
-      const rawAddresses = await networkClient.wallet.getAddresses();
 
-      const result = rawAddresses[0];
-      const rawAddress = isEthereumChain(code)
-        ? result.address.replace('0x', '')
-        : result.address;
+      const rawAddresses = await networkClient.wallet.getUnusedAddress();
+
+      const chainId = assetData.chain;
+
+      const address = chains[chainId]?.formatAddress(
+        rawAddresses.address,
+        this.configService.get('APP_NETWORK'),
+      );
 
       return {
-        address: chains[assetData?.chain]?.formatAddress(rawAddress),
+        address: address,
         code: code,
         balance: 0,
         chain: assetData.chain,
         color: assetData.color,
       };
     }
+  }
+  private getCustomAsset(code) {
+    if (cryptoassets[code]) {
+      return cryptoassets[code];
+    }
+    const wallet = this.networkClientService.getWallet();
+    return wallet.state.customTokens.mainnet[wallet.state.activeWalletId].find(
+      (asset) => {
+        return asset.symbol === code;
+      },
+    );
   }
 }

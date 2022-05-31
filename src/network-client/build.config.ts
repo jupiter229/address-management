@@ -1,6 +1,6 @@
 export default {
   defaultAssets: {
-    mainnet: ['BTC', 'WBTC.b', 'PWBTC', 'PBNB', 'FISH'], //bETH, PBNB, eth on luna
+    mainnet: ['WBTC.b', 'WETH.b'],
     testnet: ['BTC', 'ETH'],
   },
   infuraApiKey: 'da99ebc8c0964bb8bb757b6f8cc40f1f',
