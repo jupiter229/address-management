@@ -1,1 +1,1 @@
-web: npm run custom-start
+web: npm run start:prod
