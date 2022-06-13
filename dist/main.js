@@ -10,7 +10,7 @@ async function bootstrap() {
     app.enableCors({});
     app.setGlobalPrefix('api/v1');
     app.useGlobalPipes(new common_1.ValidationPipe());
-    await app.listen(3000);
+    await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
