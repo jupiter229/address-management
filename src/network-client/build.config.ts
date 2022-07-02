@@ -1,7 +1,7 @@
 export default {
   defaultAssets: {
-    mainnet: ['WBTC.b', 'WETH.b'],
-    testnet: ['BTC', 'ETH'],
+    mainnet: ['WBTC.b', 'WETH.b', 'BNB'],
+    testnet: ['WBTC.b', 'WETH.b', 'BNB'],
   },
   infuraApiKey: 'da99ebc8c0964bb8bb757b6f8cc40f1f',
   exploraApis: {

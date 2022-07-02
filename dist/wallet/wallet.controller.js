@@ -25,7 +25,7 @@ let WalletController = class WalletController {
     }
     async getAssets(req, params) {
         const { walletId } = params;
-        const assets = ['BTC', 'ETH'];
+        const assets = ['BTC', 'ETH', 'BNB'];
         const result = [];
         const rawResult = await this.walletService.getAssets(walletId);
         for (const code of assets) {
