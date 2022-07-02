@@ -46,7 +46,6 @@ export class WalletService {
   async getAssets(walletId: string) {
     const assets = this.getSupportedAssets();
     const wallet = await this.walletDocumentModel.findById(walletId);
-
     const results = [];
     for (const code of assets) {
       results.push(await this.generateAddress(code, wallet.derivationIndex));
