@@ -26,6 +26,10 @@ AppModule = __decorate([
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
             }),
+            throttler_1.ThrottlerModule.forRoot({
+                ttl: 60,
+                limit: 10,
+            }),
             authentication_module_1.AuthenticationModule,
             network_client_module_1.NetworkClientModule,
             throttler_1.ThrottlerModule.forRoot({

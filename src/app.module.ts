@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AddressModule } from './address/address.module';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { ConfigModule } from '@nestjs/config';
 import { NetworkClientModule } from './network-client/network-client.module';
@@ -17,7 +16,10 @@ import { Connection } from 'mongoose';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    // AddressModule,
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 10,
+    }),
     AuthenticationModule,
     NetworkClientModule,
     ThrottlerModule.forRoot({
