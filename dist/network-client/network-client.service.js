@@ -51,7 +51,7 @@ let NetworkClientService = class NetworkClientService {
             chain: cryptoassets_1.ChainId.BinanceSmartChain,
             symbol: 'WBTC.b',
             name: 'Binance-Peg BTCB Token',
-            contractAddress: '0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c',
+            contractAddress: '0x5a679055d1a1ac067f34b2e5109b4198da0ebf43',
             matchingAsset: 'WBTC',
             decimals: 18,
         });
@@ -61,7 +61,7 @@ let NetworkClientService = class NetworkClientService {
             chain: cryptoassets_1.ChainId.BinanceSmartChain,
             symbol: 'WETH.b',
             name: 'Binance-Peg Ethereum Token',
-            contractAddress: '0x2170ed0880ac9a755fd29b2688956bd959f933f8',
+            contractAddress: '0x6e95ef4d4026ceb7d769c52c2a3318240d9ad2ec',
             matchingAsset: 'WETH',
             decimals: 18,
         });
