@@ -43,6 +43,14 @@ export class WalletController {
     return result;
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/:walletId/raw-assets')
+  async getRawAssets(@Request() req, @Param() params) {
+    const { walletId } = params;
+
+    return this.walletService.getAssets(walletId);
+  }
+
   @Get('/supported-assets')
   async getSupportedAssets() {
     return this.walletService.getSupportedAssets();
